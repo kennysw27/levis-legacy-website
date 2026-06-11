@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- SEO Meta Tags -->
+  <title>Levi's Legacy LLC — Car Rental & Private Transportation in Dallas–Fort Worth</title>
+  <meta name="description" content="Levi's Legacy LLC offers clean, reliable car rentals and private transportation services in the Dallas–Fort Worth area. Book a sedan, SUV, or passenger van today. Flexible scheduling, easy online booking, and friendly local service." />
+  <meta name="keywords" content="DFW car rental, Dallas car rental, Fort Worth car rental, Denton car rental, Frisco car rental, private transportation DFW, airport transportation DFW, local car rental near me, Dallas Fort Worth vehicle rental, Plano car rental, McKinney car rental" />
+  <meta name="author" content="Levi's Legacy LLC" />
+  <meta name="robots" content="index, follow" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Levi's Legacy LLC — Car Rental & Private Transportation in DFW" />
+  <meta property="og:description" content="Book clean, comfortable vehicles with easy pickup, flexible scheduling, and friendly local service across the Dallas–Fort Worth area." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="./assets/hero_dallas_skyline.png" />
+  <meta property="og:locale" content="en_US" />
+
+  <!-- Favicon placeholder -->
+  <link rel="icon" type="image/png" href="./assets/levis_legacy_logo.png" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+
+  <!-- ====== Navigation ====== -->
+  <nav class="nav" id="main-nav">
+    <div class="container nav__inner">
+      <a href="#/home" class="nav__logo" aria-label="Levi's Legacy LLC Home">
+        <img src="./assets/levis_legacy_logo.png" alt="Levi's Legacy LLC Logo" class="nav__logo-img" />
+        <div class="nav__logo-text">
+          Levi's Legacy
+          <span>Car Rental & Transport</span>
+        </div>
+      </a>
+
+      <!-- Desktop Navigation -->
+      <div class="nav__links" id="desktop-nav">
+        <a href="#/home" class="nav__link nav__link--active">Home</a>
+        <a href="#/fleet" class="nav__link">Fleet</a>
+        <a href="#/private-transportation" class="nav__link">Private Transport</a>
+        <a href="#/about" class="nav__link">About</a>
+        <a href="#/faq" class="nav__link">FAQ</a>
+        <a href="#/contact" class="nav__link">Contact</a>
+        <a href="#/booking" class="btn btn--primary btn--sm nav__cta">Book Now</a>
+      </div>
+
+      <!-- Mobile Hamburger -->
+      <button class="nav__hamburger" id="nav-hamburger" onclick="toggleMobileNav()" aria-label="Toggle menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ====== Mobile Navigation Overlay ====== -->
+  <div class="mobile-nav" id="mobile-nav">
+    <a href="#/home" class="mobile-nav__link" onclick="toggleMobileNav()">Home</a>
+    <a href="#/fleet" class="mobile-nav__link" onclick="toggleMobileNav()">Fleet</a>
+    <a href="#/booking" class="mobile-nav__link" onclick="toggleMobileNav()">Book Online</a>
+    <a href="#/private-transportation" class="mobile-nav__link" onclick="toggleMobileNav()">Private Transportation</a>
+    <a href="#/about" class="mobile-nav__link" onclick="toggleMobileNav()">About</a>
+    <a href="#/faq" class="mobile-nav__link" onclick="toggleMobileNav()">FAQ</a>
+    <a href="#/contact" class="mobile-nav__link" onclick="toggleMobileNav()">Contact</a>
+    <a href="#/policies" class="mobile-nav__link" onclick="toggleMobileNav()">Policies</a>
+    <div class="mobile-nav__cta">
+      <a href="tel:+14695550187" class="btn btn--primary btn--lg" onclick="toggleMobileNav()">📞 Call (469) 555-0187</a>
+    </div>
+  </div>
+
+  <!-- ====== Main Viewport (SPA renders here) ====== -->
+  <main id="app-viewport" role="main">
+    <!-- Pages are dynamically rendered by app.js -->
+  </main>
+
+  <!-- ====== Footer ====== -->
+  <footer class="footer" id="site-footer">
+    <div class="container">
+      <div class="footer__grid">
+        <!-- Brand -->
+        <div class="footer__brand">
+          <a href="#/home" class="nav__logo" style="margin-bottom: 0;">
+            <img src="./assets/levis_legacy_logo.png" alt="Levi's Legacy LLC" class="nav__logo-img" />
+            <div class="nav__logo-text">
+              Levi's Legacy
+              <span>Car Rental & Transport</span>
+            </div>
+          </a>
+          <p class="footer__brand-desc">
+            Locally owned car rental and private transportation company serving the entire Dallas–Fort Worth metro area. Clean vehicles, honest pricing, and friendly service — that's the Levi's Legacy difference.
+          </p>
+        </div>
+
+        <!-- Quick Links -->
+        <div>
+          <h4 class="footer__col-title">Quick Links</h4>
+          <div class="footer__links">
+            <a href="#/fleet" class="footer__link">Our Fleet</a>
+            <a href="#/booking" class="footer__link">Book a Vehicle</a>
+            <a href="#/private-transportation" class="footer__link">Private Transportation</a>
+            <a href="#/about" class="footer__link">About Us</a>
+            <a href="#/faq" class="footer__link">FAQ</a>
+            <a href="#/policies" class="footer__link">Rental Policies</a>
+          </div>
+        </div>
+
+        <!-- Service Areas -->
+        <div>
+          <h4 class="footer__col-title">Service Areas</h4>
+          <div class="footer__links">
+            <span class="footer__link" style="cursor: default; color: var(--gray-500);">Dallas</span>
+            <span class="footer__link" style="cursor: default; color: var(--gray-500);">Fort Worth</span>
+            <span class="footer__link" style="cursor: default; color: var(--gray-500);">Denton & Frisco</span>
+            <span class="footer__link" style="cursor: default; color: var(--gray-500);">Plano & McKinney</span>
+            <span class="footer__link" style="cursor: default; color: var(--gray-500);">Arlington & Irving</span>
+            <span class="footer__link" style="cursor: default; color: var(--gray-500);">DFW Airport & Love Field</span>
+          </div>
+        </div>
+
+        <!-- Contact -->
+        <div>
+          <h4 class="footer__col-title">Contact Us</h4>
+          <div class="footer__links">
+            <a href="tel:+14695550187" class="footer__link">📞 (469) 555-0187</a>
+            <a href="sms:+14695550187" class="footer__link">💬 Text Us</a>
+            <a href="mailto:info@levislegacyllc.com" class="footer__link">✉️ info@levislegacyllc.com</a>
+            <span class="footer__link" style="cursor: default; color: var(--gray-500);">Mon–Sat: 8am – 8pm</span>
+            <span class="footer__link" style="cursor: default; color: var(--gray-500);">Sun: 10am – 6pm</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Bar -->
+      <div class="footer__bottom">
+        <p class="footer__copyright">© 2025 Levi's Legacy LLC. All rights reserved. Serving Dallas–Fort Worth with pride.</p>
+        <div class="footer__legal-links">
+          <a href="#/policies" class="footer__legal-link">Rental Policies</a>
+          <a href="#/faq" class="footer__legal-link">FAQ</a>
+          <a href="#/contact" class="footer__legal-link">Contact</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ====== Lightbox ====== -->
+  <div id="lightbox" class="lightbox" style="display: none;">
+    <button class="lightbox__close" onclick="closeLightbox()" aria-label="Close">&times;</button>
+    <button class="lightbox__prev" onclick="changeLightboxImage(-1)" aria-label="Previous">&#10094;</button>
+    <div class="lightbox__content">
+      <img id="lightbox__img" src="" alt="Vehicle full screen" />
+      <div id="lightbox__counter" class="lightbox__counter"></div>
+    </div>
+    <button class="lightbox__next" onclick="changeLightboxImage(1)" aria-label="Next">&#10095;</button>
+  </div>
+
+  <!-- ====== App Script (ES Module) ====== -->
+  <script type="module" src="./app.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Levi's Legacy Admin Dashboard</title>
+  <style>
+    :root {
+      --bg: #f4f7f6;
+      --text: #333;
+      --primary: #c9a45c;
+      --primary-dark: #b08d4b;
+      --navy: #162033;
+    }
+    body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; background: var(--bg); color: var(--text); }
+    header { background: var(--navy); color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+    h1 { margin: 0; font-size: 1.5rem; }
+    .container { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
+    .tabs { display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 2px solid #ddd; }
+    .tab { padding: 0.5rem 1rem; cursor: pointer; border-bottom: 3px solid transparent; font-weight: bold; }
+    .tab.active { border-color: var(--primary); color: var(--primary); }
+    .panel { display: none; background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    .panel.active { display: block; }
+    
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    th, td { padding: 1rem; text-align: left; border-bottom: 1px solid #eee; }
+    th { background: #f9f9f9; font-weight: 600; }
+    tr:hover { background: #fcfcfc; }
+    
+    .status { padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85rem; font-weight: 500; text-transform: capitalize; }
+    .status-pending { background: #fff3cd; color: #856404; }
+    .status-confirmed { background: #d4edda; color: #155724; }
+    .status-cancelled { background: #f8d7da; color: #721c24; }
+    
+    .btn { padding: 0.5rem 1rem; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    .btn:hover { background: var(--primary-dark); }
+    .btn-sm { padding: 0.25rem 0.5rem; font-size: 0.85rem; }
+    .btn-danger { background: #dc3545; }
+    
+    .edit-price-input { width: 80px; padding: 0.4rem; border: 1px solid #ccc; border-radius: 4px; margin-right: 0.5rem; }
+    
+    /* Login Overlay */
+    #login-overlay { position: fixed; inset: 0; background: var(--navy); display: flex; justify-content: center; align-items: center; z-index: 9999; }
+    .login-box { background: white; padding: 2rem; border-radius: 8px; text-align: center; }
+    .login-box input { padding: 0.5rem; width: 200px; margin-bottom: 1rem; border: 1px solid #ccc; border-radius: 4px; }
+  </style>
+</head>
+<body>
+
+  <div id="login-overlay">
+    <div class="login-box">
+      <h2>Admin Login</h2>
+      <input type="password" id="password" placeholder="Enter Password" />
+      <br />
+      <button class="btn" onclick="login()">Login</button>
+      <p id="login-error" style="color: red; display: none; font-size: 0.9rem;">Incorrect password</p>
+    </div>
+  </div>
+
+  <header>
+    <h1>Levi's Legacy Admin</h1>
+    <button class="btn btn-sm" onclick="location.reload()">Refresh Data</button>
+  </header>
+
+  <div class="container">
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('bookings', this)">Booking Requests</div>
+      <div class="tab" onclick="switchTab('vehicles', this)">Vehicle Pricing</div>
+    </div>
+
+    <!-- BOOKINGS PANEL -->
+    <div id="bookings-panel" class="panel active">
+      <h2>Recent Booking Requests</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Date Sent</th>
+            <th>Customer</th>
+            <th>Vehicle Requested</th>
+            <th>Dates</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="bookings-tbody">
+          <tr><td colspan="6">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- VEHICLES PANEL -->
+    <div id="vehicles-panel" class="panel">
+      <h2>Manage Fleet Pricing</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Image</th>
+            <th>Vehicle</th>
+            <th>Current Rate (/day)</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="vehicles-tbody">
+          <tr><td colspan="4">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="admin.js"></script>
+</body>
+</html>

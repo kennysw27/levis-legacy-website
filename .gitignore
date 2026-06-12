@@ -1,0 +1,4 @@
+node_modules/
+database.sqlite
+temp_fleet.js
+.env

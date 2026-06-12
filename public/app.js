@@ -2,7 +2,9 @@
 // Levi's Legacy LLC — SPA Core Application
 // ============================================================
 
-import { vehicles, testimonials, faqData } from "./fleet.js";
+import { testimonials, faqData } from "./fleet.js";
+
+let vehicles = [];
 
 // ---- Constants ----
 const PHONE = "(469) 555-0187";
@@ -65,7 +67,13 @@ function navigate(path) {
 }
 
 // ---- Init ----
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    const res = await fetch('/api/vehicles');
+    vehicles = await res.json();
+  } catch (e) {
+    console.error("Could not load vehicles:", e);
+  }
   renderApp();
   window.addEventListener("hashchange", renderApp);
   initNavScroll();
@@ -211,10 +219,38 @@ function initBookingForm() {
     if (select) select.value = vehicleParam;
   }
 
-  form.addEventListener("submit", (e) => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!validateBookingForm(form)) return;
-    showBookingConfirmation(form);
+    
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = "Sending...";
+    submitBtn.disabled = true;
+
+    const data = new FormData(form);
+    try {
+      await fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: data.get("full-name"),
+          email: data.get("booking-email"),
+          phone: data.get("phone"),
+          pickupDate: data.get("pickup-date"),
+          returnDate: data.get("return-date"),
+          vehicleId: data.get("vehicle-preference"),
+          message: (data.get("booking-notes") || "") + (data.get("pickup-location") ? ` [Pickup: ${data.get("pickup-location")}]` : "")
+        })
+      });
+      showBookingConfirmation(form);
+    } catch (e) {
+      console.error(e);
+      alert("There was an error submitting your request. Please try again.");
+    } finally {
+      submitBtn.textContent = originalText;
+      submitBtn.disabled = false;
+    }
   });
 }
 

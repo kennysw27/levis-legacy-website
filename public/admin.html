@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Levi's Legacy Admin Dashboard</title>
+  <link rel="icon" type="image/png" href="./assets/levis_legacy_logo.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #f4f7f6;
@@ -12,60 +14,79 @@
       --primary-dark: #b08d4b;
       --navy: #162033;
     }
+    * { box-sizing: border-box; }
     body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; background: var(--bg); color: var(--text); }
     header { background: var(--navy); color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
-    h1 { margin: 0; font-size: 1.5rem; }
+    header h1 { margin: 0; font-size: 1.5rem; }
+    .header-right { display: flex; gap: 0.75rem; align-items: center; }
     .container { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
-    .tabs { display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 2px solid #ddd; }
-    .tab { padding: 0.5rem 1rem; cursor: pointer; border-bottom: 3px solid transparent; font-weight: bold; }
+    .tabs { display: flex; gap: 0; margin-bottom: 2rem; border-bottom: 2px solid #ddd; }
+    .tab { padding: 0.75rem 1.25rem; cursor: pointer; border-bottom: 3px solid transparent; font-weight: 600; color: #666; transition: all 0.2s; }
+    .tab:hover { color: var(--primary); }
     .tab.active { border-color: var(--primary); color: var(--primary); }
-    .panel { display: none; background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    .panel { display: none; background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
     .panel.active { display: block; }
     
     table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
     th, td { padding: 1rem; text-align: left; border-bottom: 1px solid #eee; }
-    th { background: #f9f9f9; font-weight: 600; }
-    tr:hover { background: #fcfcfc; }
+    th { background: #f9f9f9; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; color: #888; letter-spacing: 0.5px; }
+    tr:hover { background: #fafafa; }
     
-    .status { padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85rem; font-weight: 500; text-transform: capitalize; }
+    .status { padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; text-transform: capitalize; display: inline-block; }
     .status-pending { background: #fff3cd; color: #856404; }
     .status-confirmed { background: #d4edda; color: #155724; }
     .status-cancelled { background: #f8d7da; color: #721c24; }
     
-    .btn { padding: 0.5rem 1rem; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    .btn { padding: 0.5rem 1rem; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: background 0.2s; }
     .btn:hover { background: var(--primary-dark); }
-    .btn-sm { padding: 0.25rem 0.5rem; font-size: 0.85rem; }
-    .btn-danger { background: #dc3545; }
+    .btn-sm { padding: 0.35rem 0.75rem; font-size: 0.85rem; }
+    .btn-outline { background: transparent; color: white; border: 1px solid rgba(255,255,255,0.3); }
+    .btn-outline:hover { background: rgba(255,255,255,0.1); }
     
-    .edit-price-input { width: 80px; padding: 0.4rem; border: 1px solid #ccc; border-radius: 4px; margin-right: 0.5rem; }
+    .edit-price-input { width: 80px; padding: 0.4rem; border: 1px solid #ddd; border-radius: 6px; margin-right: 0.5rem; font-size: 0.95rem; }
     
     /* Login Overlay */
     #login-overlay { position: fixed; inset: 0; background: var(--navy); display: flex; justify-content: center; align-items: center; z-index: 9999; }
-    .login-box { background: white; padding: 2rem; border-radius: 8px; text-align: center; }
-    .login-box input { padding: 0.5rem; width: 200px; margin-bottom: 1rem; border: 1px solid #ccc; border-radius: 4px; }
+    .login-box { background: white; padding: 2.5rem; border-radius: 12px; text-align: center; width: 340px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+    .login-box h2 { margin-top: 0; color: var(--navy); }
+    .login-box input { padding: 0.6rem 1rem; width: 100%; margin-bottom: 1rem; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; }
+    .login-box .btn { width: 100%; padding: 0.7rem; font-size: 1rem; }
+
+    /* Password Change Form */
+    .settings-form { max-width: 400px; }
+    .settings-form label { display: block; font-weight: 600; margin-bottom: 0.35rem; color: #555; font-size: 0.9rem; }
+    .settings-form input { width: 100%; padding: 0.6rem 1rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.95rem; margin-bottom: 1rem; }
+    .settings-form input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(201,164,92,0.15); }
+    .pw-message { padding: 0.75rem 1rem; border-radius: 6px; font-size: 0.9rem; margin-bottom: 1rem; }
+    .pw-error { background: #f8d7da; color: #721c24; }
+    .pw-success { background: #d4edda; color: #155724; }
   </style>
 </head>
 <body>
 
   <div id="login-overlay">
     <div class="login-box">
-      <h2>Admin Login</h2>
+      <h2>🔒 Admin Login</h2>
+      <p style="color: #888; font-size: 0.9rem; margin-bottom: 1.5rem;">Enter your password to access the dashboard</p>
       <input type="password" id="password" placeholder="Enter Password" />
-      <br />
       <button class="btn" onclick="login()">Login</button>
-      <p id="login-error" style="color: red; display: none; font-size: 0.9rem;">Incorrect password</p>
+      <p id="login-error" style="color: #dc3545; display: none; font-size: 0.9rem; margin-top: 0.75rem;">Incorrect password</p>
     </div>
   </div>
 
   <header>
-    <h1>Levi's Legacy Admin</h1>
-    <button class="btn btn-sm" onclick="location.reload()">Refresh Data</button>
+    <h1>⚙️ Levi's Legacy Admin</h1>
+    <div class="header-right">
+      <a href="/" class="btn btn-outline btn-sm" target="_blank">View Site</a>
+      <button class="btn btn-outline btn-sm" onclick="location.reload()">🔄 Refresh</button>
+    </div>
   </header>
 
   <div class="container">
     <div class="tabs">
-      <div class="tab active" onclick="switchTab('bookings', this)">Booking Requests</div>
-      <div class="tab" onclick="switchTab('vehicles', this)">Vehicle Pricing</div>
+      <div class="tab active" onclick="switchTab('bookings', this)">📋 Bookings</div>
+      <div class="tab" onclick="switchTab('vehicles', this)">🚗 Fleet Pricing</div>
+      <div class="tab" onclick="switchTab('settings', this)">🔒 Settings</div>
     </div>
 
     <!-- BOOKINGS PANEL -->
@@ -74,9 +95,9 @@
       <table>
         <thead>
           <tr>
-            <th>Date Sent</th>
+            <th>Date</th>
             <th>Customer</th>
-            <th>Vehicle Requested</th>
+            <th>Vehicle</th>
             <th>Dates</th>
             <th>Status</th>
             <th>Actions</th>
@@ -96,7 +117,7 @@
           <tr>
             <th>Image</th>
             <th>Vehicle</th>
-            <th>Current Rate (/day)</th>
+            <th>Daily Rate</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -104,6 +125,27 @@
           <tr><td colspan="4">Loading...</td></tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- SETTINGS PANEL -->
+    <div id="settings-panel" class="panel">
+      <h2>Change Admin Password</h2>
+      <p style="color: #888; margin-bottom: 1.5rem;">Update your dashboard login password below.</p>
+      
+      <div class="settings-form">
+        <div id="pw-message" class="pw-message" style="display: none;"></div>
+
+        <label for="current-password">Current Password</label>
+        <input type="password" id="current-password" placeholder="Enter current password" />
+        
+        <label for="new-password">New Password</label>
+        <input type="password" id="new-password" placeholder="Enter new password" />
+        
+        <label for="confirm-password">Confirm New Password</label>
+        <input type="password" id="confirm-password" placeholder="Re-enter new password" />
+        
+        <button class="btn" onclick="changePassword()">Update Password</button>
+      </div>
     </div>
   </div>
 

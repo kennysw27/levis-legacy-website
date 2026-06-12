@@ -1,13 +1,26 @@
-// Very basic client-side protection (Do not use for highly sensitive data, but fine for basic gating)
-const ADMIN_PASSWORD = "levis"; 
+// Admin login and data management
 
-function login() {
+async function login() {
   const pwd = document.getElementById('password').value;
-  if (pwd === ADMIN_PASSWORD) {
-    document.getElementById('login-overlay').style.display = 'none';
-    loadData();
-  } else {
-    document.getElementById('login-error').style.display = 'block';
+  const errorEl = document.getElementById('login-error');
+  
+  try {
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pwd })
+    });
+    
+    if (res.ok) {
+      document.getElementById('login-overlay').style.display = 'none';
+      window._adminPassword = pwd; // Remember for password change
+      loadData();
+    } else {
+      errorEl.style.display = 'block';
+    }
+  } catch (e) {
+    errorEl.textContent = 'Could not connect to server';
+    errorEl.style.display = 'block';
   }
 }
 
@@ -94,7 +107,6 @@ async function updateBookingStatus(id, newStatus) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: newStatus })
     });
-    // Visual update
     loadBookings();
   } catch(e) {
     alert("Failed to update status.");
@@ -110,12 +122,69 @@ async function updatePrice(id) {
       body: JSON.stringify({ dailyRate: parseInt(newPrice) })
     });
     if (res.ok) {
-      alert("Price updated successfully!");
+      alert("Price updated!");
     } else {
       alert("Failed to update price.");
     }
   } catch(e) {
-    console.error(e);
     alert("Failed to update price.");
+  }
+}
+
+async function changePassword() {
+  const currentPw = document.getElementById('current-password').value;
+  const newPw = document.getElementById('new-password').value;
+  const confirmPw = document.getElementById('confirm-password').value;
+  const msgEl = document.getElementById('pw-message');
+  
+  msgEl.style.display = 'none';
+  
+  if (!currentPw || !newPw || !confirmPw) {
+    msgEl.textContent = 'Please fill in all fields.';
+    msgEl.className = 'pw-message pw-error';
+    msgEl.style.display = 'block';
+    return;
+  }
+  
+  if (newPw !== confirmPw) {
+    msgEl.textContent = 'New passwords do not match.';
+    msgEl.className = 'pw-message pw-error';
+    msgEl.style.display = 'block';
+    return;
+  }
+
+  if (newPw.length < 4) {
+    msgEl.textContent = 'Password must be at least 4 characters.';
+    msgEl.className = 'pw-message pw-error';
+    msgEl.style.display = 'block';
+    return;
+  }
+  
+  try {
+    const res = await fetch('/api/change-password', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ currentPassword: currentPw, newPassword: newPw })
+    });
+    
+    const data = await res.json();
+    
+    if (res.ok) {
+      msgEl.textContent = '✅ Password changed successfully!';
+      msgEl.className = 'pw-message pw-success';
+      msgEl.style.display = 'block';
+      document.getElementById('current-password').value = '';
+      document.getElementById('new-password').value = '';
+      document.getElementById('confirm-password').value = '';
+      window._adminPassword = newPw;
+    } else {
+      msgEl.textContent = data.error || 'Failed to change password.';
+      msgEl.className = 'pw-message pw-error';
+      msgEl.style.display = 'block';
+    }
+  } catch(e) {
+    msgEl.textContent = 'Could not connect to server.';
+    msgEl.className = 'pw-message pw-error';
+    msgEl.style.display = 'block';
   }
 }

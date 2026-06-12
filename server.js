@@ -39,6 +39,19 @@ db.exec(`
   )
 `);
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS settings (
+    key TEXT PRIMARY KEY,
+    value TEXT
+  )
+`);
+
+// Seed default admin password if not set
+const existingPw = db.prepare("SELECT value FROM settings WHERE key = 'admin_password'").get();
+if (!existingPw) {
+  db.prepare("INSERT INTO settings (key, value) VALUES ('admin_password', 'levis')").run();
+}
+
 // Auto-seed vehicles if table is empty
 const count = db.prepare("SELECT COUNT(*) as cnt FROM vehicles").get().cnt;
 if (count === 0) {
@@ -162,6 +175,37 @@ app.put('/api/bookings/:id', (req, res) => {
     const { status } = req.body;
     const result = db.prepare("UPDATE bookings SET status = ? WHERE id = ?").run(status, req.params.id);
     res.json({ success: true, updated: result.changes });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+// --- AUTH ROUTES ---
+
+app.post('/api/login', (req, res) => {
+  try {
+    const { password } = req.body;
+    const row = db.prepare("SELECT value FROM settings WHERE key = 'admin_password'").get();
+    if (row && row.value === password) {
+      res.json({ success: true });
+    } else {
+      res.status(401).json({ success: false, error: 'Incorrect password' });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/change-password', (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const row = db.prepare("SELECT value FROM settings WHERE key = 'admin_password'").get();
+    if (!row || row.value !== currentPassword) {
+      return res.status(401).json({ success: false, error: 'Current password is incorrect' });
+    }
+    if (!newPassword || newPassword.length < 4) {
+      return res.status(400).json({ success: false, error: 'New password must be at least 4 characters' });
+    }
+    db.prepare("UPDATE settings SET value = ? WHERE key = 'admin_password'").run(newPassword);
+    res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

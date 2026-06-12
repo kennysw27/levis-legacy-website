@@ -3,6 +3,57 @@ const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 const Database = require('better-sqlite3');
+const nodemailer = require('nodemailer');
+
+// Email notification setup
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER || '',
+    pass: process.env.EMAIL_PASS || ''
+  }
+});
+
+async function sendBookingNotification(booking) {
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    console.log('Email not configured — skipping notification.');
+    return;
+  }
+
+  const vehicleName = booking.vehicleId || 'No preference';
+
+  try {
+    await transporter.sendMail({
+      from: `"Levi's Legacy Website" <${process.env.EMAIL_USER}>`,
+      to: process.env.NOTIFY_EMAIL || process.env.EMAIL_USER,
+      subject: `🚗 New Booking Request from ${booking.name}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: #162033; color: white; padding: 20px; border-radius: 8px 8px 0 0;">
+            <h2 style="margin: 0; color: #c9a45c;">New Booking Request!</h2>
+          </div>
+          <div style="background: white; padding: 24px; border: 1px solid #eee; border-radius: 0 0 8px 8px;">
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr><td style="padding: 8px 0; color: #888; width: 130px;">Customer</td><td style="padding: 8px 0; font-weight: bold;">${booking.name}</td></tr>
+              <tr><td style="padding: 8px 0; color: #888;">Email</td><td style="padding: 8px 0;"><a href="mailto:${booking.email}">${booking.email}</a></td></tr>
+              <tr><td style="padding: 8px 0; color: #888;">Phone</td><td style="padding: 8px 0;"><a href="tel:${booking.phone}">${booking.phone}</a></td></tr>
+              <tr><td style="padding: 8px 0; color: #888;">Vehicle</td><td style="padding: 8px 0;">${vehicleName}</td></tr>
+              <tr><td style="padding: 8px 0; color: #888;">Pickup Date</td><td style="padding: 8px 0;">${booking.pickupDate}</td></tr>
+              <tr><td style="padding: 8px 0; color: #888;">Return Date</td><td style="padding: 8px 0;">${booking.returnDate}</td></tr>
+              ${booking.message ? `<tr><td style="padding: 8px 0; color: #888;">Message</td><td style="padding: 8px 0;">${booking.message}</td></tr>` : ''}
+            </table>
+            <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #eee;">
+              <a href="https://levilegacy.com/admin" style="background: #c9a45c; color: white; padding: 10px 24px; border-radius: 6px; text-decoration: none; font-weight: bold;">View in Admin Dashboard</a>
+            </div>
+          </div>
+        </div>
+      `
+    });
+    console.log('Booking notification email sent!');
+  } catch (err) {
+    console.error('Failed to send email:', err.message);
+  }
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -155,6 +206,10 @@ app.post('/api/bookings', (req, res) => {
       INSERT INTO bookings (name, email, phone, pickupDate, returnDate, vehicleId, message)
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `).run(name, email, phone, pickupDate, returnDate, vehicleId, message);
+    
+    // Send email notification (don't block the response)
+    sendBookingNotification({ name, email, phone, pickupDate, returnDate, vehicleId, message });
+    
     res.json({ success: true, bookingId: result.lastInsertRowid });
   } catch (err) {
     res.status(500).json({ error: err.message });

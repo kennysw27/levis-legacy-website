@@ -4,6 +4,32 @@ const path = require('path');
 const fs = require('fs');
 const Database = require('better-sqlite3');
 const nodemailer = require('nodemailer');
+const multer = require('multer');
+
+// Ensure uploads directory exists
+const uploadsDir = path.join(__dirname, 'public', 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Configure multer for image uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadsDir),
+  filename: (req, file, cb) => {
+    const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1E6) + path.extname(file.originalname);
+    cb(null, uniqueName);
+  }
+});
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB max
+  fileFilter: (req, file, cb) => {
+    const allowed = /jpeg|jpg|png|webp|gif/;
+    const ext = allowed.test(path.extname(file.originalname).toLowerCase());
+    const mime = allowed.test(file.mimetype);
+    cb(null, ext && mime);
+  }
+});
 
 // Email notification setup
 const transporter = nodemailer.createTransport({
@@ -223,6 +249,74 @@ app.delete('/api/vehicles/:id', (req, res) => {
     if (result.changes === 0) {
       return res.status(404).json({ error: 'Vehicle not found' });
     }
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// --- IMAGE ROUTES ---
+
+// Upload images to a vehicle
+app.post('/api/vehicles/:id/images', upload.array('photos', 20), (req, res) => {
+  try {
+    const id = req.params.id;
+    const vehicle = db.prepare("SELECT images, image FROM vehicles WHERE id = ?").get(id);
+    if (!vehicle) return res.status(404).json({ error: 'Vehicle not found' });
+
+    const currentImages = JSON.parse(vehicle.images || '[]');
+    const newPaths = req.files.map(f => './uploads/' + f.filename);
+    const allImages = [...currentImages, ...newPaths];
+
+    db.prepare("UPDATE vehicles SET images = ? WHERE id = ?").run(JSON.stringify(allImages), id);
+
+    // If vehicle has no main image, set the first upload as main
+    if (!vehicle.image || vehicle.image === '') {
+      db.prepare("UPDATE vehicles SET image = ? WHERE id = ?").run(newPaths[0], id);
+    }
+
+    res.json({ success: true, images: allImages });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Delete a specific image from a vehicle
+app.delete('/api/vehicles/:id/images', (req, res) => {
+  try {
+    const id = req.params.id;
+    const { imagePath } = req.body;
+    const vehicle = db.prepare("SELECT images, image FROM vehicles WHERE id = ?").get(id);
+    if (!vehicle) return res.status(404).json({ error: 'Vehicle not found' });
+
+    let currentImages = JSON.parse(vehicle.images || '[]');
+    currentImages = currentImages.filter(img => img !== imagePath);
+    db.prepare("UPDATE vehicles SET images = ? WHERE id = ?").run(JSON.stringify(currentImages), id);
+
+    // If we deleted the main image, set a new one
+    if (vehicle.image === imagePath) {
+      const newMain = currentImages.length > 0 ? currentImages[0] : '';
+      db.prepare("UPDATE vehicles SET image = ? WHERE id = ?").run(newMain, id);
+    }
+
+    // Try to delete the file from disk
+    if (imagePath.startsWith('./uploads/')) {
+      const filePath = path.join(__dirname, 'public', imagePath.replace('./', ''));
+      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    }
+
+    res.json({ success: true, images: currentImages });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Set a specific image as the main/cover image
+app.put('/api/vehicles/:id/main-image', (req, res) => {
+  try {
+    const id = req.params.id;
+    const { imagePath } = req.body;
+    db.prepare("UPDATE vehicles SET image = ? WHERE id = ?").run(imagePath, id);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });

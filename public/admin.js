@@ -327,6 +327,8 @@ function openEditModal(vehicleId) {
   
   document.getElementById('edit-modal-title').textContent = `Edit: ${v.name}`;
   document.getElementById('edit-msg').style.display = 'none';
+  document.getElementById('photo-upload-msg').style.display = 'none';
+  renderPhotoGrid(v.id, v.images || [], v.image);
   document.getElementById('edit-modal').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -389,5 +391,105 @@ async function saveVehicleEdit() {
     msgEl.textContent = 'Could not connect to server.';
     msgEl.className = 'pw-message pw-error';
     msgEl.style.display = 'block';
+  }
+}
+
+// --- PHOTO MANAGEMENT ---
+
+function renderPhotoGrid(vehicleId, images, mainImage) {
+  const grid = document.getElementById('ev-photo-grid');
+  if (!images || images.length === 0) {
+    grid.innerHTML = '<div style="color:#888; font-size:0.9rem; padding:0.5rem 0;">No photos yet. Upload some below.</div>';
+    return;
+  }
+  grid.innerHTML = images.map((img, idx) => {
+    const isMain = img === mainImage;
+    const safeImg = img.replace(/'/g, "\\'");
+    return `
+      <div class="photo-item ${isMain ? 'is-main' : ''}">
+        <img src="${img}" alt="Photo ${idx + 1}" />
+        ${isMain ? '<div class="photo-item-badge">MAIN</div>' : ''}
+        <div class="photo-item-actions">
+          ${!isMain ? `<button onclick="setMainPhoto('${vehicleId}', '${safeImg}')">⭐</button>` : '<button style="opacity:0.5" disabled>⭐</button>'}
+          <button onclick="deletePhoto('${vehicleId}', '${safeImg}')">🗑️</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function uploadPhotos(files) {
+  const vehicleId = document.getElementById('ev-id').value;
+  const msgEl = document.getElementById('photo-upload-msg');
+  if (!files || files.length === 0) return;
+  
+  msgEl.textContent = `Uploading ${files.length} photo(s)...`;
+  msgEl.className = 'pw-message pw-success';
+  msgEl.style.display = 'block';
+
+  const formData = new FormData();
+  for (const file of files) {
+    formData.append('photos', file);
+  }
+
+  try {
+    const res = await fetch(`/api/vehicles/${vehicleId}/images`, {
+      method: 'POST',
+      body: formData
+    });
+    const data = await res.json();
+    if (res.ok) {
+      msgEl.textContent = `✅ ${files.length} photo(s) uploaded!`;
+      msgEl.className = 'pw-message pw-success';
+      await loadVehicles();
+      const updated = _vehiclesCache.find(v => v.id === vehicleId);
+      if (updated) renderPhotoGrid(vehicleId, updated.images, updated.image);
+    } else {
+      msgEl.textContent = data.error || 'Upload failed.';
+      msgEl.className = 'pw-message pw-error';
+    }
+  } catch(e) {
+    msgEl.textContent = 'Could not upload. Try again.';
+    msgEl.className = 'pw-message pw-error';
+  }
+  document.getElementById('ev-photo-input').value = '';
+}
+
+async function deletePhoto(vehicleId, imagePath) {
+  if (!confirm('Remove this photo?')) return;
+  try {
+    const res = await fetch(`/api/vehicles/${vehicleId}/images`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ imagePath })
+    });
+    if (res.ok) {
+      await loadVehicles();
+      const updated = _vehiclesCache.find(v => v.id === vehicleId);
+      if (updated) renderPhotoGrid(vehicleId, updated.images, updated.image);
+    } else {
+      alert('Failed to delete photo.');
+    }
+  } catch(e) {
+    alert('Could not connect to server.');
+  }
+}
+
+async function setMainPhoto(vehicleId, imagePath) {
+  try {
+    const res = await fetch(`/api/vehicles/${vehicleId}/main-image`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ imagePath })
+    });
+    if (res.ok) {
+      await loadVehicles();
+      const updated = _vehiclesCache.find(v => v.id === vehicleId);
+      if (updated) renderPhotoGrid(vehicleId, updated.images, updated.image);
+    } else {
+      alert('Failed to set main photo.');
+    }
+  } catch(e) {
+    alert('Could not connect to server.');
   }
 }

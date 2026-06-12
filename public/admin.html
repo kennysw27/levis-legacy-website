@@ -96,6 +96,21 @@
     .modal-body { padding: 1.5rem; }
     .modal-footer { padding: 1rem 1.5rem; border-top: 1px solid #eee; display: flex; gap: 0.75rem; justify-content: flex-end; }
     #edit-msg { margin: 0 1.5rem 1rem; }
+
+    /* Photo Management */
+    .photo-section { padding: 0 1.5rem 1rem; }
+    .photo-section h4 { margin: 0 0 0.75rem; color: var(--navy); }
+    .photo-grid { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem; }
+    .photo-item { position: relative; width: 120px; height: 90px; border-radius: 6px; overflow: hidden; border: 2px solid #e5e7eb; }
+    .photo-item.is-main { border-color: var(--primary); }
+    .photo-item img { width: 100%; height: 100%; object-fit: cover; }
+    .photo-item-badge { position: absolute; top: 4px; left: 4px; background: var(--primary); color: white; font-size: 0.65rem; padding: 2px 6px; border-radius: 3px; font-weight: 700; }
+    .photo-item-actions { position: absolute; bottom: 0; left: 0; right: 0; display: flex; background: rgba(0,0,0,0.7); }
+    .photo-item-actions button { flex: 1; background: none; border: none; color: white; font-size: 0.7rem; padding: 4px 0; cursor: pointer; }
+    .photo-item-actions button:hover { background: rgba(255,255,255,0.15); }
+    .photo-upload-area { border: 2px dashed #ccc; border-radius: 8px; padding: 1.25rem; text-align: center; cursor: pointer; transition: border-color 0.2s; }
+    .photo-upload-area:hover { border-color: var(--primary); }
+    .photo-upload-area input { display: none; }
   </style>
 </head>
 <body>
@@ -344,6 +359,18 @@
             <input type="text" id="ev-pickup" />
           </div>
         </div>
+      </div>
+      <!-- PHOTO MANAGEMENT -->
+      <div class="photo-section">
+        <h4>📷 Vehicle Photos</h4>
+        <div id="ev-photo-grid" class="photo-grid"></div>
+        <div class="photo-upload-area" onclick="document.getElementById('ev-photo-input').click()">
+          <div style="font-size:1.5rem;">📤</div>
+          <div style="font-weight:600; margin-top:0.25rem;">Click to upload photos</div>
+          <div style="color:#888; font-size:0.8rem;">JPG, PNG, WebP — max 10MB each</div>
+          <input type="file" id="ev-photo-input" multiple accept="image/*" onchange="uploadPhotos(this.files)" />
+        </div>
+        <div id="photo-upload-msg" class="pw-message" style="display:none; margin-top:0.75rem;"></div>
       </div>
       <div id="edit-msg" class="pw-message" style="display:none;"></div>
       <div class="modal-footer">

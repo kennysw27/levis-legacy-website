@@ -84,6 +84,18 @@
     .btn-success:hover { background: #218838; }
 
     @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+
+    /* Edit Modal */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: flex-start; z-index: 9998; padding: 2rem; overflow-y: auto; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: white; border-radius: 12px; width: 100%; max-width: 700px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); margin-top: 2rem; }
+    .modal-header { background: var(--navy); color: white; padding: 1.25rem 1.5rem; border-radius: 12px 12px 0 0; display: flex; justify-content: space-between; align-items: center; }
+    .modal-header h3 { margin: 0; font-size: 1.15rem; }
+    .modal-close { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; padding: 0; line-height: 1; opacity: 0.7; }
+    .modal-close:hover { opacity: 1; }
+    .modal-body { padding: 1.5rem; }
+    .modal-footer { padding: 1rem 1.5rem; border-top: 1px solid #eee; display: flex; gap: 0.75rem; justify-content: flex-end; }
+    #edit-msg { margin: 0 1.5rem 1rem; }
   </style>
 </head>
 <body>
@@ -224,11 +236,12 @@
             <th>Vehicle</th>
             <th>Daily Rate</th>
             <th>Save</th>
+            <th>Edit</th>
             <th>Remove</th>
           </tr>
         </thead>
         <tbody id="vehicles-tbody">
-          <tr><td colspan="5">Loading...</td></tr>
+          <tr><td colspan="6">Loading...</td></tr>
         </tbody>
       </table>
     </div>
@@ -251,6 +264,91 @@
         <input type="password" id="confirm-password" placeholder="Re-enter new password" />
         
         <button class="btn" onclick="changePassword()">Update Password</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDIT VEHICLE MODAL -->
+  <div id="edit-modal" class="modal-overlay" onclick="if(event.target===this)closeEditModal()">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="edit-modal-title">Edit Vehicle</h3>
+        <button class="modal-close" onclick="closeEditModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="ev-id" />
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Vehicle Name</label>
+            <input type="text" id="ev-name" />
+          </div>
+          <div class="form-group">
+            <label>Vehicle Type</label>
+            <input type="text" id="ev-type" placeholder="e.g. Sedan, SUV" />
+          </div>
+          <div class="form-group">
+            <label>Category</label>
+            <select id="ev-category">
+              <option value="sedan">Sedan</option>
+              <option value="suv">SUV</option>
+              <option value="family">Family / Minivan</option>
+              <option value="premium">Premium / Luxury</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Daily Rate ($)</label>
+            <input type="number" id="ev-rate" />
+          </div>
+          <div class="form-group">
+            <label>Seats</label>
+            <input type="number" id="ev-seats" />
+          </div>
+          <div class="form-group">
+            <label>Bags</label>
+            <input type="number" id="ev-bags" />
+          </div>
+          <div class="form-group">
+            <label>Transmission</label>
+            <input type="text" id="ev-transmission" />
+          </div>
+          <div class="form-group">
+            <label>Fuel Type</label>
+            <input type="text" id="ev-fuel" />
+          </div>
+          <div class="form-group full-width">
+            <label>Short Description</label>
+            <textarea id="ev-short-desc" rows="2"></textarea>
+          </div>
+          <div class="form-group full-width">
+            <label>Full Description</label>
+            <textarea id="ev-full-desc" rows="3"></textarea>
+          </div>
+          <div class="form-group full-width">
+            <label>Best For</label>
+            <input type="text" id="ev-bestfor" />
+          </div>
+          <div class="form-group">
+            <label>Security Deposit</label>
+            <input type="text" id="ev-deposit" />
+          </div>
+          <div class="form-group">
+            <label>Mileage Policy</label>
+            <input type="text" id="ev-mileage" />
+          </div>
+          <div class="form-group full-width">
+            <label>Fuel Policy</label>
+            <input type="text" id="ev-fuelpolicy" />
+          </div>
+          <div class="form-group full-width">
+            <label>Pickup & Drop-off</label>
+            <input type="text" id="ev-pickup" />
+          </div>
+        </div>
+      </div>
+      <div id="edit-msg" class="pw-message" style="display:none;"></div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+        <button class="btn" onclick="saveVehicleEdit()">Save Changes</button>
       </div>
     </div>
   </div>

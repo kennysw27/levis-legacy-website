@@ -77,17 +77,19 @@ async function loadBookings() {
   }
 }
 
+let _vehiclesCache = [];
+
 async function loadVehicles() {
   try {
     const res = await fetch('/api/vehicles');
-    const vehicles = await res.json();
+    _vehiclesCache = await res.json();
     
     const tbody = document.getElementById('vehicles-tbody');
-    if (vehicles.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5">No vehicles yet. Click "Add New Vehicle" above.</td></tr>';
+    if (_vehiclesCache.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6">No vehicles yet. Click "Add New Vehicle" above.</td></tr>';
       return;
     }
-    tbody.innerHTML = vehicles.map(v => `
+    tbody.innerHTML = _vehiclesCache.map(v => `
       <tr>
         <td><img src="${v.image || ''}" width="80" style="border-radius:4px; background:#eee;" onerror="this.style.display='none'" /></td>
         <td>
@@ -101,7 +103,10 @@ async function loadVehicles() {
           <button class="btn btn-sm" onclick="updatePrice('${v.id}')">Save</button>
         </td>
         <td>
-          <button class="btn btn-sm btn-danger" onclick="deleteVehicle('${v.id}', '${v.name.replace(/'/g, "\\'")}')">🗑️ Remove</button>
+          <button class="btn btn-sm" style="background:#3b82f6;" onclick="openEditModal('${v.id}')">✏️ Edit</button>
+        </td>
+        <td>
+          <button class="btn btn-sm btn-danger" onclick="deleteVehicle('${v.id}', '${v.name.replace(/'/g, "\\'")}')">🗑️</button>
         </td>
       </tr>
     `).join('');
@@ -294,5 +299,95 @@ async function deleteVehicle(id, name) {
     }
   } catch(e) {
     alert('Could not connect to server.');
+  }
+}
+
+// --- EDIT VEHICLE MODAL ---
+
+function openEditModal(vehicleId) {
+  const v = _vehiclesCache.find(x => x.id === vehicleId);
+  if (!v) return alert('Vehicle not found');
+  
+  document.getElementById('ev-id').value = v.id;
+  document.getElementById('ev-name').value = v.name || '';
+  document.getElementById('ev-type').value = v.type || '';
+  document.getElementById('ev-category').value = v.category || 'suv';
+  document.getElementById('ev-rate').value = v.dailyRate || '';
+  document.getElementById('ev-seats').value = v.seats || 5;
+  document.getElementById('ev-bags').value = v.bags || 3;
+  document.getElementById('ev-transmission').value = v.transmission || '';
+  document.getElementById('ev-fuel').value = v.fuelType || '';
+  document.getElementById('ev-short-desc').value = v.shortDescription || '';
+  document.getElementById('ev-full-desc').value = v.fullDescription || '';
+  document.getElementById('ev-bestfor').value = v.bestFor || '';
+  document.getElementById('ev-deposit').value = v.deposit || '';
+  document.getElementById('ev-mileage').value = v.mileagePolicy || '';
+  document.getElementById('ev-fuelpolicy').value = v.fuelPolicy || '';
+  document.getElementById('ev-pickup').value = v.pickupDropoff || '';
+  
+  document.getElementById('edit-modal-title').textContent = `Edit: ${v.name}`;
+  document.getElementById('edit-msg').style.display = 'none';
+  document.getElementById('edit-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeEditModal() {
+  document.getElementById('edit-modal').classList.remove('open');
+  document.body.style.overflow = 'auto';
+}
+
+async function saveVehicleEdit() {
+  const id = document.getElementById('ev-id').value;
+  const msgEl = document.getElementById('edit-msg');
+  msgEl.style.display = 'none';
+  
+  const data = {
+    name: document.getElementById('ev-name').value.trim(),
+    type: document.getElementById('ev-type').value.trim(),
+    category: document.getElementById('ev-category').value,
+    dailyRate: parseInt(document.getElementById('ev-rate').value) || 0,
+    seats: parseInt(document.getElementById('ev-seats').value) || 5,
+    bags: parseInt(document.getElementById('ev-bags').value) || 3,
+    transmission: document.getElementById('ev-transmission').value.trim(),
+    fuelType: document.getElementById('ev-fuel').value.trim(),
+    shortDescription: document.getElementById('ev-short-desc').value.trim(),
+    fullDescription: document.getElementById('ev-full-desc').value.trim(),
+    bestFor: document.getElementById('ev-bestfor').value.trim(),
+    deposit: document.getElementById('ev-deposit').value.trim(),
+    mileagePolicy: document.getElementById('ev-mileage').value.trim(),
+    fuelPolicy: document.getElementById('ev-fuelpolicy').value.trim(),
+    pickupDropoff: document.getElementById('ev-pickup').value.trim()
+  };
+  
+  if (!data.name) {
+    msgEl.textContent = 'Vehicle name is required.';
+    msgEl.className = 'pw-message pw-error';
+    msgEl.style.display = 'block';
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/vehicles/' + id, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    
+    if (res.ok) {
+      msgEl.textContent = '✅ Vehicle updated successfully!';
+      msgEl.className = 'pw-message pw-success';
+      msgEl.style.display = 'block';
+      loadVehicles();
+      setTimeout(() => closeEditModal(), 1000);
+    } else {
+      const err = await res.json();
+      msgEl.textContent = err.error || 'Failed to update.';
+      msgEl.className = 'pw-message pw-error';
+      msgEl.style.display = 'block';
+    }
+  } catch(e) {
+    msgEl.textContent = 'Could not connect to server.';
+    msgEl.className = 'pw-message pw-error';
+    msgEl.style.display = 'block';
   }
 }

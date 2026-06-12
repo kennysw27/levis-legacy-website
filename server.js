@@ -168,13 +168,19 @@ app.get('/api/vehicles', (req, res) => {
 
 app.put('/api/vehicles/:id', (req, res) => {
   try {
-    const { dailyRate, name, shortDescription } = req.body;
     const id = req.params.id;
+    const editableFields = ['name', 'type', 'category', 'seats', 'bags', 'dailyRate',
+      'transmission', 'fuelType', 'shortDescription', 'fullDescription', 'bestFor',
+      'deposit', 'mileagePolicy', 'fuelPolicy', 'pickupDropoff', 'image'];
+    
     const updates = [];
     const values = [];
-    if (dailyRate !== undefined) { updates.push('dailyRate = ?'); values.push(dailyRate); }
-    if (name !== undefined) { updates.push('name = ?'); values.push(name); }
-    if (shortDescription !== undefined) { updates.push('shortDescription = ?'); values.push(shortDescription); }
+    for (const field of editableFields) {
+      if (req.body[field] !== undefined) {
+        updates.push(`${field} = ?`);
+        values.push(req.body[field]);
+      }
+    }
     if (updates.length === 0) return res.status(400).json({ error: 'No fields to update' });
     values.push(id);
     const result = db.prepare(`UPDATE vehicles SET ${updates.join(', ')} WHERE id = ?`).run(...values);

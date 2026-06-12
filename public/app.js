@@ -7,9 +7,9 @@ import { testimonials, faqData } from "./fleet.js";
 let vehicles = [];
 
 // ---- Constants ----
-const PHONE = "(469) 555-0187";
-const PHONE_LINK = "tel:+14695550187";
-const SMS_LINK = "sms:+14695550187";
+const PHONE = "(254) 592-5792";
+const PHONE_LINK = "tel:+12545925792";
+const SMS_LINK = "sms:+12545925792";
 const EMAIL = "info@levislegacyllc.com";
 
 // ============================================================

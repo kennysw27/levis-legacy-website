@@ -60,6 +60,30 @@
     .pw-message { padding: 0.75rem 1rem; border-radius: 6px; font-size: 0.9rem; margin-bottom: 1rem; }
     .pw-error { background: #f8d7da; color: #721c24; }
     .pw-success { background: #d4edda; color: #155724; }
+
+    /* Add Vehicle Form */
+    .add-vehicle-toggle { margin-bottom: 1.5rem; }
+    .add-vehicle-form { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem; display: none; }
+    .add-vehicle-form.open { display: block; }
+    .add-vehicle-form h3 { margin-top: 0; color: var(--navy); }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-group { display: flex; flex-direction: column; }
+    .form-group.full-width { grid-column: 1 / -1; }
+    .form-group label { font-weight: 600; font-size: 0.85rem; color: #555; margin-bottom: 0.3rem; }
+    .form-group input, .form-group select, .form-group textarea { padding: 0.5rem 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem; font-family: inherit; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(201,164,92,0.15); }
+    .form-group textarea { resize: vertical; min-height: 60px; }
+    .form-actions { margin-top: 1rem; display: flex; gap: 0.75rem; }
+    #add-vehicle-msg { margin-top: 0.75rem; }
+
+    .btn-danger { background: #dc3545; }
+    .btn-danger:hover { background: #c82333; }
+    .btn-secondary { background: #6c757d; }
+    .btn-secondary:hover { background: #5a6268; }
+    .btn-success { background: #28a745; }
+    .btn-success:hover { background: #218838; }
+
+    @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
@@ -111,18 +135,100 @@
 
     <!-- VEHICLES PANEL -->
     <div id="vehicles-panel" class="panel">
-      <h2>Manage Fleet Pricing</h2>
+      <h2>Manage Fleet</h2>
+      
+      <div class="add-vehicle-toggle">
+        <button class="btn btn-success" onclick="toggleAddForm()">➕ Add New Vehicle</button>
+      </div>
+
+      <div id="add-vehicle-form" class="add-vehicle-form">
+        <h3>Add a New Vehicle</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Vehicle Name *</label>
+            <input type="text" id="av-name" placeholder="e.g. 2024 Toyota Camry" />
+          </div>
+          <div class="form-group">
+            <label>Vehicle Type</label>
+            <input type="text" id="av-type" placeholder="e.g. Sedan, SUV, Minivan" />
+          </div>
+          <div class="form-group">
+            <label>Category</label>
+            <select id="av-category">
+              <option value="sedan">Sedan</option>
+              <option value="suv" selected>SUV</option>
+              <option value="family">Family / Minivan</option>
+              <option value="premium">Premium / Luxury</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Daily Rate ($) *</label>
+            <input type="number" id="av-rate" placeholder="e.g. 65" />
+          </div>
+          <div class="form-group">
+            <label>Seats</label>
+            <input type="number" id="av-seats" value="5" />
+          </div>
+          <div class="form-group">
+            <label>Bags</label>
+            <input type="number" id="av-bags" value="3" />
+          </div>
+          <div class="form-group">
+            <label>Transmission</label>
+            <input type="text" id="av-transmission" value="Automatic" />
+          </div>
+          <div class="form-group">
+            <label>Fuel Type</label>
+            <input type="text" id="av-fuel" value="Regular Gasoline" />
+          </div>
+          <div class="form-group full-width">
+            <label>Short Description</label>
+            <textarea id="av-short-desc" placeholder="Brief summary shown on the fleet page..."></textarea>
+          </div>
+          <div class="form-group full-width">
+            <label>Full Description</label>
+            <textarea id="av-full-desc" placeholder="Detailed description shown on the vehicle page..."></textarea>
+          </div>
+          <div class="form-group full-width">
+            <label>Best For</label>
+            <input type="text" id="av-bestfor" placeholder="e.g. Family trips, business travel, road trips" />
+          </div>
+          <div class="form-group">
+            <label>Security Deposit</label>
+            <input type="text" id="av-deposit" placeholder="e.g. $200 security deposit (refundable)" />
+          </div>
+          <div class="form-group">
+            <label>Mileage Policy</label>
+            <input type="text" id="av-mileage" placeholder="e.g. Unlimited miles included" />
+          </div>
+          <div class="form-group full-width">
+            <label>Fuel Policy</label>
+            <input type="text" id="av-fuelpolicy" placeholder="e.g. Return with same fuel level" />
+          </div>
+          <div class="form-group full-width">
+            <label>Pickup & Drop-off</label>
+            <input type="text" id="av-pickup" placeholder="e.g. Pickup and drop-off at our DFW location" />
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-success" onclick="addVehicle()">Add Vehicle</button>
+          <button class="btn btn-secondary" onclick="toggleAddForm()">Cancel</button>
+        </div>
+        <div id="add-vehicle-msg" class="pw-message" style="display:none;"></div>
+      </div>
+
       <table>
         <thead>
           <tr>
             <th>Image</th>
             <th>Vehicle</th>
             <th>Daily Rate</th>
-            <th>Actions</th>
+            <th>Save</th>
+            <th>Remove</th>
           </tr>
         </thead>
         <tbody id="vehicles-tbody">
-          <tr><td colspan="4">Loading...</td></tr>
+          <tr><td colspan="5">Loading...</td></tr>
         </tbody>
       </table>
     </div>

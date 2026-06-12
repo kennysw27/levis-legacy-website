@@ -83,15 +83,25 @@ async function loadVehicles() {
     const vehicles = await res.json();
     
     const tbody = document.getElementById('vehicles-tbody');
+    if (vehicles.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5">No vehicles yet. Click "Add New Vehicle" above.</td></tr>';
+      return;
+    }
     tbody.innerHTML = vehicles.map(v => `
       <tr>
-        <td><img src="${v.image}" width="80" style="border-radius:4px;" /></td>
-        <td><strong>${v.name}</strong></td>
+        <td><img src="${v.image || ''}" width="80" style="border-radius:4px; background:#eee;" onerror="this.style.display='none'" /></td>
+        <td>
+          <strong>${v.name}</strong><br/>
+          <span style="color:#888; font-size:0.8rem;">${v.type || ''} · ${v.seats || 0} seats</span>
+        </td>
         <td>
           $<input type="number" id="price-${v.id}" class="edit-price-input" value="${v.dailyRate}" /> /day
         </td>
         <td>
-          <button class="btn btn-sm" onclick="updatePrice('${v.id}')">Save Price</button>
+          <button class="btn btn-sm" onclick="updatePrice('${v.id}')">Save</button>
+        </td>
+        <td>
+          <button class="btn btn-sm btn-danger" onclick="deleteVehicle('${v.id}', '${v.name.replace(/'/g, "\\'")}')">🗑️ Remove</button>
         </td>
       </tr>
     `).join('');
@@ -176,7 +186,6 @@ async function changePassword() {
       document.getElementById('current-password').value = '';
       document.getElementById('new-password').value = '';
       document.getElementById('confirm-password').value = '';
-      window._adminPassword = newPw;
     } else {
       msgEl.textContent = data.error || 'Failed to change password.';
       msgEl.className = 'pw-message pw-error';
@@ -186,5 +195,104 @@ async function changePassword() {
     msgEl.textContent = 'Could not connect to server.';
     msgEl.className = 'pw-message pw-error';
     msgEl.style.display = 'block';
+  }
+}
+
+// --- VEHICLE ADD / DELETE ---
+
+function toggleAddForm() {
+  const form = document.getElementById('add-vehicle-form');
+  form.classList.toggle('open');
+}
+
+async function addVehicle() {
+  const name = document.getElementById('av-name').value.trim();
+  const dailyRate = document.getElementById('av-rate').value;
+  const msgEl = document.getElementById('add-vehicle-msg');
+  
+  msgEl.style.display = 'none';
+
+  if (!name || !dailyRate) {
+    msgEl.textContent = 'Vehicle name and daily rate are required.';
+    msgEl.className = 'pw-message pw-error';
+    msgEl.style.display = 'block';
+    return;
+  }
+
+  const vehicleData = {
+    name,
+    type: document.getElementById('av-type').value.trim() || 'Vehicle',
+    category: document.getElementById('av-category').value,
+    seats: parseInt(document.getElementById('av-seats').value) || 5,
+    bags: parseInt(document.getElementById('av-bags').value) || 3,
+    dailyRate: parseInt(dailyRate),
+    transmission: document.getElementById('av-transmission').value.trim(),
+    fuelType: document.getElementById('av-fuel').value.trim(),
+    shortDescription: document.getElementById('av-short-desc').value.trim(),
+    fullDescription: document.getElementById('av-full-desc').value.trim(),
+    bestFor: document.getElementById('av-bestfor').value.trim(),
+    deposit: document.getElementById('av-deposit').value.trim(),
+    mileagePolicy: document.getElementById('av-mileage').value.trim(),
+    fuelPolicy: document.getElementById('av-fuelpolicy').value.trim(),
+    pickupDropoff: document.getElementById('av-pickup').value.trim()
+  };
+
+  try {
+    const res = await fetch('/api/vehicles', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(vehicleData)
+    });
+
+    if (res.ok) {
+      msgEl.textContent = '✅ Vehicle added successfully!';
+      msgEl.className = 'pw-message pw-success';
+      msgEl.style.display = 'block';
+      
+      // Clear the form
+      document.getElementById('av-name').value = '';
+      document.getElementById('av-type').value = '';
+      document.getElementById('av-rate').value = '';
+      document.getElementById('av-short-desc').value = '';
+      document.getElementById('av-full-desc').value = '';
+      document.getElementById('av-bestfor').value = '';
+      document.getElementById('av-deposit').value = '';
+      document.getElementById('av-mileage').value = '';
+      document.getElementById('av-fuelpolicy').value = '';
+      document.getElementById('av-pickup').value = '';
+      
+      // Reload the vehicles table
+      loadVehicles();
+      
+      // Close form after a moment
+      setTimeout(() => { toggleAddForm(); msgEl.style.display = 'none'; }, 1500);
+    } else {
+      const data = await res.json();
+      msgEl.textContent = data.error || 'Failed to add vehicle.';
+      msgEl.className = 'pw-message pw-error';
+      msgEl.style.display = 'block';
+    }
+  } catch(e) {
+    msgEl.textContent = 'Could not connect to server.';
+    msgEl.className = 'pw-message pw-error';
+    msgEl.style.display = 'block';
+  }
+}
+
+async function deleteVehicle(id, name) {
+  if (!confirm(`Are you sure you want to remove "${name}" from your fleet? This cannot be undone.`)) {
+    return;
+  }
+  
+  try {
+    const res = await fetch('/api/vehicles/' + id, { method: 'DELETE' });
+    if (res.ok) {
+      alert(`"${name}" has been removed.`);
+      loadVehicles();
+    } else {
+      alert('Failed to remove vehicle.');
+    }
+  } catch(e) {
+    alert('Could not connect to server.');
   }
 }

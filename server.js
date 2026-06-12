@@ -186,12 +186,38 @@ app.put('/api/vehicles/:id', (req, res) => {
 
 app.post('/api/vehicles', (req, res) => {
   try {
-    const { id, name, type, category, seats, bags, dailyRate, image, transmission, shortDescription } = req.body;
+    const { id, name, type, category, seats, bags, dailyRate, image, transmission,
+            fuelType, shortDescription, fullDescription, bestFor, deposit, mileagePolicy,
+            fuelPolicy, pickupDropoff, features, rentalRequirements } = req.body;
+    
+    // Generate an id from the name if not provided
+    const vehicleId = id || name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+$/, '');
+    
     db.prepare(`
-      INSERT INTO vehicles (id, name, type, category, seats, bags, dailyRate, image, transmission, shortDescription, images, features, rentalRequirements)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '[]', '[]', '[]')
-    `).run(id, name, type, category, seats, bags, dailyRate, image, transmission, shortDescription);
-    res.json({ success: true, id });
+      INSERT INTO vehicles (id, name, type, category, seats, bags, dailyRate, image, transmission,
+        fuelType, shortDescription, fullDescription, bestFor, deposit, mileagePolicy, fuelPolicy,
+        pickupDropoff, images, features, rentalRequirements)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '[]', ?, ?)
+    `).run(vehicleId, name, type || 'Vehicle', category || 'suv', seats || 5, bags || 3,
+           dailyRate, image || '', transmission || 'Automatic', fuelType || 'Regular Gasoline',
+           shortDescription || '', fullDescription || '', bestFor || '',
+           deposit || '', mileagePolicy || '', fuelPolicy || '', pickupDropoff || '',
+           JSON.stringify(features || []), JSON.stringify(rentalRequirements || []));
+    
+    res.json({ success: true, id: vehicleId });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Delete a vehicle
+app.delete('/api/vehicles/:id', (req, res) => {
+  try {
+    const result = db.prepare("DELETE FROM vehicles WHERE id = ?").run(req.params.id);
+    if (result.changes === 0) {
+      return res.status(404).json({ error: 'Vehicle not found' });
+    }
+    res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

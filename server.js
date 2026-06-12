@@ -178,6 +178,8 @@ app.put('/api/bookings/:id', (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
+
 // --- AUTH ROUTES ---
 
 app.post('/api/login', (req, res) => {
